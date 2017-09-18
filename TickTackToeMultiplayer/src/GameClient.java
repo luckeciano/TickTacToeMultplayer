@@ -1,6 +1,8 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.BindException;
+import java.net.ConnectException;
 import java.net.Socket;
 
 public class GameClient implements Runnable {
@@ -39,15 +41,17 @@ public class GameClient implements Runnable {
 
 	public boolean connect() {
 		try {
+			System.out.println("CLIENT LOGGER - Initializing client-side socket");
 			_socket = new Socket(_ip, _port);
 			_dos = new DataOutputStream(_socket.getOutputStream());
 			_dis = new DataInputStream(_socket.getInputStream());
 			_accepted = true;
 		} catch (IOException e) {
-			System.out.println("Unable to connect to the address: " + _ip + ":" + _port + " | Starting a server");
+			System.out.println("CLIENT LOGGER - ERROR - " + e.getMessage() );
+			System.out.println("CLIENT LOGGER - Unable to connect to the address: " + _ip + ":" + _port + " | Starting a server");
 			return false;
-		}
-		System.out.println("Successfully connected to the server.");
+		} 
+		System.out.println("CLIENT LOGGER - Successfully connected to the server.");
 		return true;
 	}
 
@@ -73,7 +77,7 @@ public class GameClient implements Runnable {
 		while (true) {
 			_clientGUI.tick(this);
 			_clientGUI.getPainter().repaint();
-
+			//WAITING CONNECTION
 			if (!_circle && !_accepted) {
 				_gameServer.listenForServerRequest(this);
 			}

@@ -24,8 +24,11 @@ public class GameServer {
 	public void initializeServer() {
 		try {
 			_serverSocket = new ServerSocket(_port, 8, InetAddress.getByName(_ip));
+			System.out.println("SERVER LOGGER -  SERVER INITIALIZING IN:" + _ip + ":" +_port);
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("SERVER LOGGER - ERROR - " + e.getMessage());
+			System.out.println("SERVER LOGGER - IT WAS NOT POSSIBLE TO INITIALIZE SERVER. RESTART THE APPLICATION.");
+			System.exit(1);
 		}
 		
 	}
@@ -37,9 +40,9 @@ public class GameServer {
 			gameClient.setDataOutputStream(new DataOutputStream(socket.getOutputStream()));
 			gameClient.setDataInputStream(new DataInputStream(socket.getInputStream()));
 			gameClient.setAccepted(true);
-			System.out.println("CLIENT HAS REQUESTED TO JOIN, AND WE HAVE ACCEPTED");
+			System.out.println("SERVER LOGGER - Client accepted");
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("SERVER LOGGER - ERROR -  " + e.getMessage());
 		}
 		
 	}

@@ -1,0 +1,88 @@
+Alguns casos de teste:
+
+--- CONEXÃO -----
+
+Connection Timed Out: Joga a mensagem e inicia um servidor (Testar com IP inválido)
+Connection Refused: Joga a mensagem e inicia um servidor (Conectar com o IP local em um e desligar a internet).
+
+
+-- JOGO ---
+
+Player desconecta do jogo: Unnable to communicate with the other player - Socket Exception
+
+No jogo ocorre mais de 10 erros: Unnable to communicate with the other player - Internet instável (Não sei como testar)
+
+Terceiro Jogador: Estabelece conexão, mas não consegue jogar e não atrapalha o jogo anterior.
+
+
+
+
+
+
+Errors handled:
+
+6.8.1	SocketException
+The java.net.SocketException represents a generic socket error, which can represent a range of specific error conditions. For finer-grained control, applications should catch the subclasses discussed below.
+
+6.8.2	BindException
+The java.net.BindException represents an inability to bind a socket to a local port. The most common reason for this will be that the local port is already in use.
+
+6.8.3	ConnectException
+The java.net.ConnectException occurs when a socket can't connect to a specific remote host and port. There can be several reasons for this, such as that the remote server does not have a service bound to that port, or that it is so swamped by queued connections, it cannot accept any further ones.
+
+6.8.4	NoRouteToHostException
+The java.net.NoRouteToHostException is thrown when, due to a network error, it is impossible to find a route to the remote host. The cause of this may be local (i.e., the network on which the software application is running), may be a temporary gateway or router problem, or may be the fault of the remote network to which the socket is trying to connect. Another common cause of this is that firewalls and routers are blocking the client software, which is usually a permanent condition.
+
+6.8.5	InterruptedIOException
+The java.net.InterruptedIOException occurs when a read operation is blocked for sufficient time to cause a network timeout, as discussed earlier in the chapter. Handling timeouts is a good way to make your code more robust and reliable.
+
+
+
+FONTE: http://www.informit.com/articles/article.aspx?p=27633&seqNum=9
+
+
+APRESENTAÇÃO
+
+1) Os Sockets são robustos na própria implementação da linguagem. O importante na aplicação é o
+tratamento de exceções jogadas.
+
+2) Início da aplicação - GameClient::run(): O player cria a sua interface e espera conexão com servidor,
+i.e, alguma resposta deste (GameServer::listenForServerRequest()).
+
+3.1) Conexão com servidor - GameClient::connect():
+	1) Conexão com sucesso - inicia o jogo
+	2) Timeout: O cliente envia a mensagem mas não recebe resposta - a aplicação inicia um novo servidor
+	3) Connection Refused: O cliente tenta enviar a mensagem mas não há rede (ou essa é bloqueada) - 
+a aplicação inicia um novo servidor
+
+	OBS: Criação do servidor: GameServer::initializeServer() 
+		Cria um serverSocket a partir do IP e porta fornecidos. 
+		Caso de erro: Joga exceção e fecha aplicação.
+
+3.2) Conexão com o client - GameServer::listenForServerRequest():
+	1) Conexão com sucesso - aceita o client socket e cria os buffers de leitura e escrita a 
+	serem compartilhados.
+	2) Do lado do servidor, não foram analisados erros de conexão, apenas tratados genericamente (POSSÍVEL MELHORIA)
+
+	
+4.1) Jogadas - Recebendo Dados do Servidor: GUI::tick();
+	No run(), o cliente fica espera um dado novo no buffer de leitura quando não é seu turno.
+	1) Caso haja algum problema na mensagem, joga-se uma exceção, a jogada a invalidada e incrementa uma variável de erro.
+	Se a variável de erro chegar a um valor limite, a conexão é bloqueada. Isto serve para lidar com 
+	flutuações de rede.
+	O turno do jogador só começa quando este recebe a jogada do oponente no buffer de leitura.
+4.2) Jogadas - Enviando Dados para o Servidor: GUI::mouseClicked();
+	No clique do mouse, verifica-se inicialmente se é turno do player. Se sim, calcula-se a posição
+	jogada. Se ela é válida, envia-se para o servidor.
+	
+	1) O jogador tenta escrever no buffer de escrita. Caso ele consiga (depende da resposta do servidor), o cliente termina limpa o buffer 
+de escrita, reescreve sua interface gráfica e termina sua jogada.
+	2) Caso não consiga escrever (um Timeout, por exemplo), o logger relata o erro, a jogada é invalidada e a GUI permanece a mesma.
+	Incrementa-se a variável de erro.
+	
+
+POSSÍVEIS MELHORIAS:
+- Analisar erros de conexão do lado do servidor
+- Analisar timeout para quem lê o buffer de leitura.
+- Analisar comportamento com flutuações de rede
+	
