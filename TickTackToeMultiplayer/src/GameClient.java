@@ -75,6 +75,13 @@ public class GameClient implements Runnable {
 	@Override
 	public void run() {
 		while (true) {
+			// Aqui demonstra que mesmo com atraso nao ha condicao de disputa
+			/*try {
+				Thread.sleep(15000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
 			_clientGUI.tick(this);
 			_clientGUI.getPainter().repaint();
 			//WAITING CONNECTION
