@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.SocketException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -151,10 +152,7 @@ public class GUI {
 	
 	public void tick(GameClient gameClient) {
 		if (gameClient.getErrors() >= 10) {
-			System.out.println("CLIENT LOGGER - Due to instability of the network, this client is unnable"
-					+ " to communicate with opponent");
 			gameClient.setCommunicationState(true);
-			System.exit(1);
 		}
 
 		if (!gameClient.isYourTurn() && !gameClient.isUnnableToCommunicateWithOpponent()) {
@@ -192,6 +190,9 @@ public class GUI {
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			if (_gameClient.isAccepted()) {
+				if (_gameClient.getErrors() >= 10) {
+					_gameClient.setCommunicationState(true);
+				}
 				if (_gameClient.isYourTurn() && !_gameClient.isUnnableToCommunicateWithOpponent() 
 						&& !_gameClient.hasWon() && !_gameClient.hasEnemyWon()) {
 					int x = e.getX() / lengthOfSpace;
@@ -203,7 +204,6 @@ public class GUI {
 						if (!_gameClient.isCircle()) _gameClient.setBoard(position, "X");
 						else _gameClient.setBoard(position, "O");
 						
-
 						try {
 							_gameClient.getOutputStream().writeInt(position);
 							_gameClient.getOutputStream().flush();
@@ -214,8 +214,13 @@ public class GUI {
 							_gameClient.setTurn(false);
 						} catch (IOException e1) {
 							_gameClient.addErrors();
+							if (e1.getClass() == SocketException.class) {
+								_gameClient.setCommunicationState(true);
+							}
+							System.out.println(e1.getClass());
 							System.out.println("CLIENT LOGGER - ERROR - " + e1.getMessage());
 						}
+						
 						
 						
 						System.out.println("CLIENT LOGGER - " + "Client sent his play in position " + position);

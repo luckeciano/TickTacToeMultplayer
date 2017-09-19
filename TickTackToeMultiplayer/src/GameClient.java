@@ -101,7 +101,10 @@ public class GameClient implements Runnable {
 	}
 
 	public void setCommunicationState(boolean b) {
+		System.out.println("CLIENT LOGGER - Due to instability of the network, this client is unnable"
+				+ " to communicate with opponent");
 		_unableToCommunicateWithOpponent = true;
+		System.exit(1);
 		
 	}
 	
